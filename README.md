@@ -333,17 +333,11 @@ After Pandas generates the results:
 
 ---
 
-## 📸 Screenshots
+## 📸 Video 
 
-Add screenshots here before submission.
+<div style="position: relative; padding-bottom: 41.5625%; height: 0;"><iframe src="https://www.loom.com/embed/c205efeffc9b491aafdbe60bd72e7953" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
-```text
-screenshots/
 
-├── dashboard.png
-├── player_comparison.png
-├── top_players.png
-└── team_analysis.png
 ```
 
 ---
