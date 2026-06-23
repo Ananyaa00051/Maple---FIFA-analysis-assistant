@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment (uv-managed)
+.venv/
+
+# uv lock file (keep in version control)
+# uv.lock  ← intentionally tracked
+
+# Environment variables
+.env
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit cache
+.streamlit/cache/
+
+# Notebooks
+*.ipynb_checkpoints/
+
+# Logs
+*.log
