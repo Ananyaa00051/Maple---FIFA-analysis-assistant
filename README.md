@@ -299,18 +299,6 @@ All analytics and calculations are executed directly on the FIFA dataset using P
 
 ---
 
-# Screenshots
-
-| Rankings       | Comparison     |
-| -------------- | -------------- |
-| Add Screenshot | Add Screenshot |
-
-| Team Analytics |
-| -------------- |
-| Add Screenshot |
-
----
-
 # Limitations
 
 * Works only with the provided FIFA dataset
@@ -322,7 +310,7 @@ All analytics and calculations are executed directly on the FIFA dataset using P
 
 <div align="center">
 
-### Built with ⚽ + 📊 + 🤖
+### Built with ⚽ + 📊 + 🤖 for IQM assesment
 
 MAPLE — Football Intelligence Powered by Data & AI
 
