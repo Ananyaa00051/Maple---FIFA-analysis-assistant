@@ -1,83 +1,172 @@
-# ⚽ FIFA AI Scout Assistant
+<div align="center">
 
-An AI-powered football analytics chatbot that lets you ask natural language questions about FIFA player and team data — and get ranked tables, interactive charts, and Groq-powered insights in return.
+# ⚽ MAPLE
+
+### Match & Athlete Performance and League Evaluator
+
+**AI-Powered Football Analytics Assistant**
+
+Natural language football analytics powered by **Groq**, **LLaMA 3.3**, **Pandas**, and **Streamlit**
+
+<br>
+
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge\&logo=streamlit\&logoColor=white)
+![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-black?style=for-the-badge)
+![Pandas](https://img.shields.io/badge/Pandas-Analytics-150458?style=for-the-badge\&logo=pandas)
+![Plotly](https://img.shields.io/badge/Plotly-Interactive_Charts-3F4F75?style=for-the-badge\&logo=plotly)
+![License](https://img.shields.io/badge/Status-Assignment_Project-success?style=for-the-badge)
+
+<br>
+
+*"Ask football questions in plain English. Get data-backed answers instantly."*
+
+</div>
 
 ---
 
-## 🌟 Features
+## 🚀 Overview
 
-| Feature | Description |
-|---|---|
-| **Top Players** | Rank players by overall rating, globally or by position |
-| **Young Talent** | Discover rising stars under any age threshold |
-| **Player Comparison** | Head-to-head radar charts & stat tables |
-| **Advanced Filtering** | Filter by pace, nationality, club, position, and more |
-| **Team Analysis** | Club rankings by average overall or potential |
-| **Hidden Gems** | Undervalued players by value score formula |
-| **High Potential** | Future stars sorted by potential rating |
-| **AI Summaries** | Groq LLaMA 3.3 generates 3-bullet insights for every result |
-| **Interactive Charts** | Plotly bar charts, scatter plots, radar charts |
+MAPLE is an AI-powered football analytics assistant that allows users to explore FIFA player and team data using natural language.
+
+Instead of manually filtering spreadsheets, users can ask questions such as:
+
+```text
+Show me the top 10 players by overall rating
+Compare Messi and Ronaldo
+Find the best players under age 23
+Which clubs have the highest average rating?
+Show me strikers with pace above 85
+```
+
+The system converts these questions into structured analytics queries, executes them using Pandas, visualizes results with Plotly, and generates concise insights using Groq's LLaMA 3.3 model.
+
+---
+
+## ✨ Features
+
+| Capability                | Description                                       |
+| ------------------------- | ------------------------------------------------- |
+| 🏆 Top Players            | Rank players globally or by position              |
+| 🌱 Young Talent Discovery | Find rising stars by age and potential            |
+| ⚔️ Player Comparison      | Compare two players side-by-side                  |
+| 🎯 Advanced Filtering     | Filter by pace, nationality, club, position, etc. |
+| 🏟️ Team Analysis         | Rank clubs by average overall or potential        |
+| 💎 Hidden Gems            | Discover undervalued players                      |
+| 🚀 Future Stars           | Find high-potential prospects                     |
+| 🤖 AI Insights            | Groq-generated summaries for every result         |
+| 📊 Interactive Charts     | Plotly-powered visual analytics                   |
+
+---
+
+## 🧠 System Architecture
+
+```mermaid
+flowchart TD
+
+A[User Query] --> B[Groq Intent Parser]
+
+B --> C{Intent Type}
+
+C --> D[Top Players]
+C --> E[Player Comparison]
+C --> F[Filtering]
+C --> G[Team Analysis]
+C --> H[Value Analysis]
+
+D --> I[Pandas Analytics Engine]
+E --> I
+F --> I
+G --> I
+H --> I
+
+I --> J[Structured Results]
+
+J --> K[Plotly Visualizations]
+J --> L[Groq Summary Generator]
+
+K --> M[Streamlit Interface]
+L --> M
+```
+
+---
+
+## ⚙️ Technology Stack
+
+| Layer           | Technology               |
+| --------------- | ------------------------ |
+| Frontend        | Streamlit                |
+| Data Processing | Pandas, NumPy            |
+| AI Model        | Groq LLaMA 3.3 70B       |
+| Visualizations  | Plotly                   |
+| Environment     | Python 3.11+             |
+| Package Manager | uv                       |
+| Dataset         | FIFA 23 Complete Dataset |
 
 ---
 
 ## 📦 Dataset
 
-**Recommended:** [FIFA 23 Complete Player Dataset](https://www.kaggle.com/datasets/stefanoleone992/fifa-23-complete-player-dataset) from Kaggle.
+### FIFA 23 Complete Player Dataset
 
-**Expected CSV columns:**
+Expected columns:
 
+```text
+player_name
+age
+nationality
+club
+position
+overall
+potential
+value_eur
+wage_eur
+pace
+shooting
+passing
+dribbling
+defending
+physicality
 ```
-player_name, age, nationality, club, position, overall, potential,
-value_eur, wage_eur, pace, shooting, passing, dribbling, defending, physicality
+
+The loader automatically normalizes common variations:
+
+```text
+short_name  → player_name
+physic      → physicality
+club_name   → club
 ```
 
-The loader auto-normalizes common column name variants (e.g. `short_name` → `player_name`, `physic` → `physicality`).
-
-**Don't have the dataset yet?** Generate a 600-player sample for testing:
+### Generate Test Data
 
 ```bash
 uv run python generate_sample_data.py
 ```
 
+Creates a synthetic dataset containing approximately 600 football players for local testing.
+
 ---
 
-## 🛠️ Quick Start (with `uv` — recommended)
+## 🛠️ Quick Start
 
-[`uv`](https://docs.astral.sh/uv/) is a blazing-fast Python package manager. It replaces `pip` + `venv` in a single tool.
-
-### 1. Install `uv` (one-time)
-
-**macOS / Linux:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-**Windows (PowerShell):**
-```powershell
-powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
-
-### 2. Clone the repository
+### Install Dependencies
 
 ```bash
-git clone https://github.com/your-username/fifa-ai-scout.git
-cd fifa-ai-scout/fifa_scout
-```
+git clone https://github.com/your-username/maple-football-analytics.git
 
-### 3. Create environment & install all dependencies
+cd fifa_scout
 
-```bash
 uv sync
 ```
 
-> This automatically creates a `.venv/` folder and installs every dependency pinned in `uv.lock`. No manual `pip install` needed.
+---
 
-### 4. Add your dataset
+### Add Dataset
 
-```
+```text
 fifa_scout/
 └── data/
-    └── fifa_players.csv    ← place your CSV here
+    └── fifa_players.csv
 ```
 
 Or generate sample data:
@@ -86,7 +175,9 @@ Or generate sample data:
 uv run python generate_sample_data.py
 ```
 
-### 5. Set your API key
+---
+
+### Configure API Key
 
 Create a `.env` file:
 
@@ -94,151 +185,175 @@ Create a `.env` file:
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-**Or** copy the secrets template:
+Alternative:
 
 ```bash
 cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# then edit it and add your key
 ```
 
-### 6. Run the app
+Then add your API key.
+
+---
+
+### Launch Application
 
 ```bash
 uv run streamlit run app.py
 ```
 
-The app opens at **http://localhost:8501** ⚡
+Open:
 
----
-
-## 🛠️ Alternative: pip (classic)
-
-```bash
-python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
-
-pip install -r requirements.txt
-streamlit run app.py
+```text
+http://localhost:8501
 ```
-
----
-
-## 🔑 Groq API Setup
-
-1. Sign up at [console.groq.com](https://console.groq.com)
-2. Create a free API key
-3. Paste it into your `.env` or `.streamlit/secrets.toml`
-
-The app uses **`llama-3.3-70b-versatile`** for both query parsing and summary generation.
 
 ---
 
 ## 💬 Example Queries
 
-```
+```text
 Show me top 10 players
+
 Compare Messi and Ronaldo
+
 Best players under 23
+
 Best strikers with pace above 85
+
 Which clubs have the highest average rating?
+
 Best value players
+
 Players with potential above 90
+
 Top 5 goalkeepers
+
 Spanish players with overall above 85
+
 Best midfielders under 25
 ```
 
 ---
 
-## 🏗️ Architecture
+## 📊 Analytics Pipeline
 
-```
-User Query (natural language)
-        │
-        ▼
-┌─────────────────────┐
-│   Query Parser      │  ← Groq LLM classifies intent → JSON
-│   (query_parser.py) │
-└────────┬────────────┘
-         │  {intent, filters, limit, ...}
-         ▼
-┌─────────────────────┐
-│   Intent Router     │  ← Dispatches to correct function
-│   (intent_router.py)│
-└────────┬────────────┘
-         │
-         ▼
-┌─────────────────────┐
-│   Analytics Engine  │  ← Pure Pandas operations
-│   (analytics.py)    │
-└────────┬────────────┘
-         │  DataFrame + metadata
-         ▼
-┌─────────────────────┐    ┌──────────────────────┐
-│   Visualization     │    │   LLM Summary        │
-│   (visualization.py)│    │   (llm_service.py)   │
-└────────┬────────────┘    └──────────┬───────────┘
-         │                            │
-         └──────────┬─────────────────┘
-                    ▼
-         Streamlit Chat UI (app.py)
+```mermaid
+sequenceDiagram
+
+participant User
+participant Groq
+participant Router
+participant Pandas
+participant Plotly
+participant UI
+
+User->>Groq: Natural Language Query
+Groq->>Router: Structured Intent JSON
+Router->>Pandas: Execute Analytics Logic
+Pandas->>Plotly: Generate Charts
+Pandas->>Groq: Send Result Snapshot
+Groq->>UI: AI Summary
+Plotly->>UI: Interactive Visuals
 ```
 
 ---
 
-## 📁 Folder Structure
+## 📁 Project Structure
 
-```
+```text
 fifa_scout/
-│
-├── app.py                   # Streamlit app entry point
-├── pyproject.toml           # uv / pip project metadata & deps
-├── requirements.txt         # pip fallback
-├── uv.lock                  # Pinned dependency lockfile (uv)
+
+├── app.py
+├── pyproject.toml
+├── requirements.txt
+├── uv.lock
 ├── README.md
-├── generate_sample_data.py  # Test data generator
-├── .env                     # Your API key (git-ignored)
-├── .gitignore
+├── generate_sample_data.py
 │
 ├── data/
-│   └── fifa_players.csv     # Your FIFA dataset
+│   └── fifa_players.csv
 │
 ├── src/
-│   ├── __init__.py
-│   ├── data_loader.py       # CSV loading, validation, caching
-│   ├── query_parser.py      # Groq intent classification
-│   ├── intent_router.py     # Intent → analytics function routing
-│   ├── analytics.py         # All Pandas analytics logic
-│   ├── llm_service.py       # Groq client + summary generation
-│   ├── visualization.py     # Plotly chart builders
-│   └── utils.py             # Shared helpers
+│   ├── data_loader.py
+│   ├── query_parser.py
+│   ├── intent_router.py
+│   ├── analytics.py
+│   ├── llm_service.py
+│   ├── visualization.py
+│   └── utils.py
 │
 └── .streamlit/
-    ├── config.toml          # Dark theme config
+    ├── config.toml
     └── secrets.toml.example
 ```
 
 ---
 
-## 🤖 AI Usage Explanation
+## 🤖 AI Usage
 
-The app uses Groq's LLaMA 3.3 70B model in **two distinct ways**:
+### 1. Intent Classification
 
-### 1. Query Understanding (Intent Classification)
-The LLM reads the user's natural language question and returns **only a structured JSON object** — it never answers football questions directly. This JSON specifies the intent type (`top_players`, `compare_players`, etc.) and extracted parameters (filters, limits, player names). This keeps analytics deterministic and data-grounded.
+The LLM interprets user questions and converts them into structured JSON.
 
-### 2. Result Summarization
-After Pandas computes the result table, a **data snapshot** (max 30 rows) is sent to the LLM with a strict prompt: summarize in 3 bullet points, max 80 words, no hallucinations, use only provided data. This produces grounded, factual insights rather than generic football commentary.
+Example:
+
+```json
+{
+  "intent": "filter_players",
+  "position": "ST",
+  "pace_min": 85,
+  "limit": 10
+}
+```
+
+The model never directly answers football questions.
+
+---
+
+### 2. Insight Generation
+
+After Pandas generates the results:
+
+* Top rows are sent to Groq
+* Strict anti-hallucination prompt is used
+* Output limited to 3 concise bullets
+* Summary is grounded entirely in returned data
 
 ---
 
 ## ⚠️ Known Limitations
 
-- **Dataset-dependent:** Accuracy depends on the quality and completeness of your FIFA CSV. Missing columns (e.g. `pace`) will raise a clear error.
-- **Player name matching:** Uses substring matching — very common names (e.g. "Fernandez") may match the wrong player.
-- **GK stats:** FIFA stores goalkeeper-specific ratings separately; pace/shooting/etc. are often 0 for GKs in some exports.
-- **Value scores:** Hidden gems formula (`(overall + potential) / value_eur`) favours cheap players — very low-value players may score unrealistically high.
-- **Groq rate limits:** Free tier has request limits. Heavy usage may require a paid plan.
-- **No real-time data:** Dataset is static — reflects the FIFA version of your CSV, not live transfer market values.
-- **Multi-player comparison:** Currently supports exactly 2 players. Comparing 3+ is not yet implemented.
+* Dataset quality directly affects results
+* Name matching uses substring search
+* Goalkeeper attributes may be incomplete in some FIFA exports
+* Hidden gem score can favor very low-value players
+* Groq free tier has rate limits
+* Dataset is static (not real-time football data)
+* Currently supports comparison between exactly 2 players
+
+---
+
+## 📸 Screenshots
+
+Add screenshots here before submission.
+
+```text
+screenshots/
+
+├── dashboard.png
+├── player_comparison.png
+├── top_players.png
+└── team_analysis.png
+```
+
+---
+
+<div align="center">
+
+### ⚽ Built with Data, AI, and Football Analytics
+
+**MAPLE — Match & Athlete Performance and League Evaluator**
+
+Powered by Groq • Streamlit • Pandas • Plotly
+
+</div>
