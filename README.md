@@ -1,274 +1,164 @@
-<div align="center">
-
 # ⚽ MAPLE
 
 ### Match & Athlete Performance and League Evaluator
 
-**AI-Powered Football Analytics Assistant**
-
-Natural language football analytics powered by **Groq**, **LLaMA 3.3**, **Pandas**, and **Streamlit**
-
-<br>
-
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
-![Streamlit](https://img.shields.io/badge/Streamlit-App-FF4B4B?style=for-the-badge\&logo=streamlit\&logoColor=white)
-![Groq](https://img.shields.io/badge/Groq-Llama_3.3_70B-black?style=for-the-badge)
-![Pandas](https://img.shields.io/badge/Pandas-Analytics-150458?style=for-the-badge\&logo=pandas)
-![Plotly](https://img.shields.io/badge/Plotly-Interactive_Charts-3F4F75?style=for-the-badge\&logo=plotly)
-![License](https://img.shields.io/badge/Status-Assignment_Project-success?style=for-the-badge)
-
-<br>
-
-*"Ask football questions in plain English. Get data-backed answers instantly."*
-
-</div>
+MAPLE is an AI-powered football analytics assistant built on FIFA player data. It allows users to ask natural language questions about football players and teams and receive structured insights, rankings, comparisons, and analytics.
 
 ---
 
-## 🚀 Overview
+## 🎥 Demo
 
-MAPLE is an AI-powered football analytics assistant that allows users to explore FIFA player and team data using natural language.
+Loom Walkthrough:
+https://www.loom.com/share/c205efeffc9b491aafdbe60bd72e7953
 
-Instead of manually filtering spreadsheets, users can ask questions such as:
+---
+
+## Features
+
+* Top player rankings
+* Player comparisons
+* Young talent discovery
+* Advanced player filtering
+* Team-level analytics
+* Best value player analysis
+* AI-generated insights using Groq LLM
+* Interactive visualizations
+
+---
+
+## Example Queries
+
+* Show me the top 10 players by overall rating
+* Find the best young players under age 23
+* Compare Messi and Ronaldo
+* Show me the best strikers with pace above 85
+* Which teams have the highest average player rating?
+* Give me a short analysis of the best value players
+
+---
+
+## Tech Stack
+
+* Python
+* Streamlit
+* Pandas
+* Plotly
+* Groq API (Llama 3.3 70B)
+
+---
+
+## Architecture
 
 ```text
-Show me the top 10 players by overall rating
-Compare Messi and Ronaldo
-Find the best players under age 23
-Which clubs have the highest average rating?
-Show me strikers with pace above 85
-```
-
-The system converts these questions into structured analytics queries, executes them using Pandas, visualizes results with Plotly, and generates concise insights using Groq's LLaMA 3.3 model.
-
----
-
-## ✨ Features
-
-| Capability                | Description                                       |
-| ------------------------- | ------------------------------------------------- |
-| 🏆 Top Players            | Rank players globally or by position              |
-| 🌱 Young Talent Discovery | Find rising stars by age and potential            |
-| ⚔️ Player Comparison      | Compare two players side-by-side                  |
-| 🎯 Advanced Filtering     | Filter by pace, nationality, club, position, etc. |
-| 🏟️ Team Analysis         | Rank clubs by average overall or potential        |
-| 💎 Hidden Gems            | Discover undervalued players                      |
-| 🚀 Future Stars           | Find high-potential prospects                     |
-| 🤖 AI Insights            | Groq-generated summaries for every result         |
-| 📊 Interactive Charts     | Plotly-powered visual analytics                   |
-
----
-
-## 🧠 System Architecture
-
-```mermaid
-flowchart TD
-
-A[User Query] --> B[Groq Intent Parser]
-
-B --> C{Intent Type}
-
-C --> D[Top Players]
-C --> E[Player Comparison]
-C --> F[Filtering]
-C --> G[Team Analysis]
-C --> H[Value Analysis]
-
-D --> I[Pandas Analytics Engine]
-E --> I
-F --> I
-G --> I
-H --> I
-
-I --> J[Structured Results]
-
-J --> K[Plotly Visualizations]
-J --> L[Groq Summary Generator]
-
-K --> M[Streamlit Interface]
-L --> M
+User Query
+     │
+     ▼
+Streamlit Interface
+     │
+     ▼
+Groq LLM
+(Intent Extraction)
+     │
+     ▼
+Intent Router
+     │
+     ├── Ranking Engine
+     ├── Filtering Engine
+     ├── Comparison Engine
+     ├── Team Analytics Engine
+     └── Value Analysis Engine
+     │
+     ▼
+Pandas Data Processing
+     │
+     ▼
+Structured Results
+(Table / Charts)
+     │
+     ▼
+Groq Insight Generator
+     │
+     ▼
+Final Response
 ```
 
 ---
 
-## ⚙️ Technology Stack
+## Query Processing Pipeline
 
-| Layer           | Technology               |
-| --------------- | ------------------------ |
-| Frontend        | Streamlit                |
-| Data Processing | Pandas, NumPy            |
-| AI Model        | Groq LLaMA 3.3 70B       |
-| Visualizations  | Plotly                   |
-| Environment     | Python 3.11+             |
-| Package Manager | uv                       |
-| Dataset         | FIFA 23 Complete Dataset |
+1. User submits a natural language football query.
+2. Groq extracts the intent and relevant parameters.
+3. The Intent Router maps the request to the appropriate analytics function.
+4. Pandas performs filtering, ranking, aggregation, or comparison on the FIFA dataset.
+5. Results are displayed as structured tables and visualizations.
+6. Groq generates concise insights based on the retrieved results.
+7. The final response is presented to the user.
+
+### Example
+
+**User Query**
+
+> Show me the best strikers with pace above 85
+
+**Intent Extracted**
+
+```json
+{
+  "intent": "filter_players",
+  "position": "ST",
+  "pace_min": 85
+}
+```
+
+**Analytics Execution**
+
+```python
+df[
+    (df["position"] == "ST") &
+    (df["pace"] > 85)
+].sort_values("overall", ascending=False)
+```
+
+**Output**
+
+* Ranked player table
+* Interactive chart
+* AI-generated insight summary
 
 ---
 
-## 📦 Dataset
+## Dataset
 
-### FIFA 23 Complete Player Dataset
+**FIFA 23 Complete Player Dataset**
 
-Expected columns:
+The dataset contains player information and performance attributes, including:
+
+* Name
+* Age
+* Nationality
+* Club
+* Position
+* Overall Rating
+* Potential
+* Market Value
+* Wage
+* Pace
+* Shooting
+* Passing
+* Dribbling
+* Defending
+* Physicality
+
+---
+
+## Project Structure
 
 ```text
-player_name
-age
-nationality
-club
-position
-overall
-potential
-value_eur
-wage_eur
-pace
-shooting
-passing
-dribbling
-defending
-physicality
-```
-
-The loader automatically normalizes common variations:
-
-```text
-short_name  → player_name
-physic      → physicality
-club_name   → club
-```
-
-### Generate Test Data
-
-```bash
-uv run python generate_sample_data.py
-```
-
-Creates a synthetic dataset containing approximately 600 football players for local testing.
-
----
-
-## 🛠️ Quick Start
-
-### Install Dependencies
-
-```bash
-git clone https://github.com/your-username/maple-football-analytics.git
-
-cd fifa_scout
-
-uv sync
-```
-
----
-
-### Add Dataset
-
-```text
-fifa_scout/
-└── data/
-    └── fifa_players.csv
-```
-
-Or generate sample data:
-
-```bash
-uv run python generate_sample_data.py
-```
-
----
-
-### Configure API Key
-
-Create a `.env` file:
-
-```env
-GROQ_API_KEY=your_groq_api_key_here
-```
-
-Alternative:
-
-```bash
-cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-```
-
-Then add your API key.
-
----
-
-### Launch Application
-
-```bash
-uv run streamlit run app.py
-```
-
-Open:
-
-```text
-http://localhost:8501
-```
-
----
-
-## 💬 Example Queries
-
-```text
-Show me top 10 players
-
-Compare Messi and Ronaldo
-
-Best players under 23
-
-Best strikers with pace above 85
-
-Which clubs have the highest average rating?
-
-Best value players
-
-Players with potential above 90
-
-Top 5 goalkeepers
-
-Spanish players with overall above 85
-
-Best midfielders under 25
-```
-
----
-
-## 📊 Analytics Pipeline
-
-```mermaid
-sequenceDiagram
-
-participant User
-participant Groq
-participant Router
-participant Pandas
-participant Plotly
-participant UI
-
-User->>Groq: Natural Language Query
-Groq->>Router: Structured Intent JSON
-Router->>Pandas: Execute Analytics Logic
-Pandas->>Plotly: Generate Charts
-Pandas->>Groq: Send Result Snapshot
-Groq->>UI: AI Summary
-Plotly->>UI: Interactive Visuals
-```
-
----
-
-## 📁 Project Structure
-
-```text
-fifa_scout/
-
+maple/
+│
 ├── app.py
-├── pyproject.toml
 ├── requirements.txt
-├── uv.lock
 ├── README.md
-├── generate_sample_data.py
 │
 ├── data/
 │   └── fifa_players.csv
@@ -282,72 +172,66 @@ fifa_scout/
 │   ├── visualization.py
 │   └── utils.py
 │
-└── .streamlit/
-    ├── config.toml
-    └── secrets.toml.example
+├── screenshots/
+│
+└── assets/
 ```
 
 ---
 
-## 🤖 AI Usage
+## Running Locally
 
-### 1. Intent Classification
+### 1. Clone the Repository
 
-The LLM interprets user questions and converts them into structured JSON.
-
-Example:
-
-```json
-{
-  "intent": "filter_players",
-  "position": "ST",
-  "pace_min": 85,
-  "limit": 10
-}
+```bash
+git clone <repository-url>
+cd maple
 ```
 
-The model never directly answers football questions.
+### 2. Install Dependencies
 
----
+```bash
+pip install -r requirements.txt
+```
 
-### 2. Insight Generation
+### 3. Configure Environment Variables
 
-After Pandas generates the results:
+Create a `.env` file:
 
-* Top rows are sent to Groq
-* Strict anti-hallucination prompt is used
-* Output limited to 3 concise bullets
-* Summary is grounded entirely in returned data
+```env
+GROQ_API_KEY=your_api_key
+```
 
----
+### 4. Start the Application
 
-## ⚠️ Known Limitations
-
-* Dataset quality directly affects results
-* Name matching uses substring search
-* Goalkeeper attributes may be incomplete in some FIFA exports
-* Hidden gem score can favor very low-value players
-* Groq free tier has rate limits
-* Dataset is static (not real-time football data)
-* Currently supports comparison between exactly 2 players
-
----
-
-## 📸 Video 
-
-<div style="position: relative; padding-bottom: 41.5625%; height: 0;"><iframe src="https://www.loom.com/embed/c205efeffc9b491aafdbe60bd72e7953" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
-
-
+```bash
+streamlit run app.py
 ```
 
 ---
 
-<div align="center">
+## AI Usage
 
-### ⚽ Built with Data, AI, and Football Analytics
+Groq LLM is used for:
 
-**MAPLE — Match & Athlete Performance and League Evaluator**
+* Natural language query understanding
+* Intent extraction
+* Query parameter identification
+* Insight generation and result summarization
 
-Powered by Groq • Streamlit • Pandas • Plotly
+All calculations, filtering, aggregations, rankings, and comparisons are performed directly on the FIFA dataset using Pandas.
 
-</div>
+---
+
+## Limitations
+
+* Works only with the provided FIFA dataset
+* Does not provide live football statistics
+* Query support is limited to implemented analytics features
+* Player comparisons require matching names present in the dataset
+
+---
+
+## Author
+
+Built for IQM internship assignment task
