@@ -18,6 +18,7 @@ SUPPORTED_INTENTS = [
     "team_analysis",
     "value_analysis",
     "potential_analysis",
+    "player_report",
     "unsupported",
 ]
 
@@ -48,7 +49,11 @@ Supported intents and their parameters:
 7. potential_analysis - High potential players
    {"intent": "potential_analysis", "filters": {"potential_min": 85, "age_max": null, "position": null}, "limit": 10}
 
-8. unsupported - Query not related to FIFA data analytics
+8. player_report - Full scouting report for a single named player
+   {"intent": "player_report", "player_name": "Exact Player Name"}
+   Trigger phrases: "report on", "analyze", "analyse", "scout", "profile", "tell me about", "scouting report", "performance report"
+
+9. unsupported - Query not related to FIFA data analytics
    {"intent": "unsupported", "message": "brief reason"}
 
 Rules:

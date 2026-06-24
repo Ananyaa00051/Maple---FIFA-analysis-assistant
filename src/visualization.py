@@ -219,3 +219,113 @@ def chart_value_players(result_df: pd.DataFrame):
     layout["height"] = max(300, len(df) * 35 + 80)
     fig.update_layout(**layout)
     return fig
+
+
+# ---------------------------------------------------------------------------
+# 6. Single-Player Radar Chart (Player Report)
+# ---------------------------------------------------------------------------
+
+def chart_player_radar_single(skill_snapshot: dict, player_name: str):
+    """Filled radar chart for a single player's 6 skill attributes."""
+    if not skill_snapshot:
+        return None
+
+    labels = list(skill_snapshot.keys())
+    values = list(skill_snapshot.values())
+    # Close the polygon
+    labels_closed = labels + [labels[0]]
+    values_closed = values + [values[0]]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values_closed,
+        theta=labels_closed,
+        fill="toself",
+        name=player_name,
+        line=dict(color=ACCENT, width=2),
+        fillcolor="rgba(0,212,164,0.18)",
+        mode="lines+markers+text",
+        text=[str(v) for v in values] + [str(values[0])],
+        textposition="top center",
+        textfont=dict(color=ACCENT, size=11),
+    ))
+
+    fig.update_layout(
+        polar=dict(
+            bgcolor="rgba(0,0,0,0)",
+            radialaxis=dict(
+                visible=True,
+                range=[0, 100],
+                gridcolor=GRID,
+                color=TEXT,
+                tickfont=dict(size=9, color="#667788"),
+            ),
+            angularaxis=dict(gridcolor=GRID, color=TEXT, tickfont=dict(size=12)),
+        ),
+        paper_bgcolor=BG,
+        font=dict(color=TEXT, family="Inter, sans-serif"),
+        title=dict(
+            text=f"{player_name} — Attribute Breakdown",
+            font=dict(color=TEXT, size=14),
+        ),
+        height=420,
+        margin=dict(l=60, r=60, t=60, b=40),
+        showlegend=False,
+    )
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# 7. Percentile Bar Chart (Player Report)
+# ---------------------------------------------------------------------------
+
+def chart_percentile_bars(percentiles: dict, player_name: str):
+    """
+    Horizontal bar chart showing league percentile rank for each skill.
+    Colour-coded: green (>=75), amber (>=50), red (<50).
+    """
+    if not percentiles:
+        return None
+
+    skills = [k.capitalize() for k in percentiles.keys()]
+    pcts   = list(percentiles.values())
+
+    colors = []
+    for p in pcts:
+        if p >= 75:
+            colors.append("#00D4A4")   # teal-green: elite
+        elif p >= 50:
+            colors.append("#F4A724")   # amber: above average
+        else:
+            colors.append("#FF6B6B")   # red: below average
+
+    suffix_text = [f"Top {round(100 - p, 1)}%" for p in pcts]
+
+    fig = go.Figure(go.Bar(
+        x=pcts,
+        y=skills,
+        orientation="h",
+        marker=dict(color=colors, line=dict(width=0)),
+        text=suffix_text,
+        textposition="outside",
+        textfont=dict(color=TEXT, size=11),
+        hovertemplate="%{y}: %{x:.1f}th percentile<extra></extra>",
+    ))
+
+    layout = _base_layout(f"{player_name} — League Percentile Rankings")
+    layout.update(dict(
+        xaxis=dict(title="Percentile (vs. all players)", range=[0, 115],
+                   gridcolor=GRID, zerolinecolor=GRID),
+        yaxis=dict(gridcolor=GRID, zerolinecolor=GRID),
+        height=320,
+        shapes=[dict(
+            type="line", x0=75, x1=75, y0=-0.5, y1=len(skills) - 0.5,
+            line=dict(color="#00D4A4", width=1, dash="dash"),
+        )],
+        annotations=[dict(
+            x=75, y=len(skills) - 0.4, text="Top 25%",
+            showarrow=False, font=dict(color="#00D4A4", size=10),
+        )],
+    ))
+    fig.update_layout(**layout)
+    return fig

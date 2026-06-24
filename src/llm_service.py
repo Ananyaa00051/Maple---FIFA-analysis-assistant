@@ -78,3 +78,66 @@ Rules:
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"_Summary generation failed: {e}_"
+
+
+def generate_scout_report(meta: dict, groq_client: Groq) -> str:
+    """
+    Generate a professional AI scout summary for a Player Performance Report.
+    Uses percentiles, strengths, and profile data to write a grounded paragraph.
+    """
+    if groq_client is None:
+        return "_AI scout summary unavailable — GROQ_API_KEY not set._"
+
+    profile     = meta.get("profile", {})
+    percentiles = meta.get("percentiles", {})
+    strengths   = meta.get("strengths", [])
+    improvements = meta.get("improvements", [])
+    similar     = meta.get("similar_players", [])
+    name        = meta.get("player_name", "This player")
+
+    pct_lines = "\n".join(
+        f"  - {k.capitalize()}: {v}th percentile (Top {round(100-v,1)}%)"
+        for k, v in percentiles.items()
+    )
+    strengths_text   = "\n".join(f"  • {s}" for s in strengths)   or "  • None identified"
+    improve_text     = "\n".join(f"  • {s}" for s in improvements) or "  • None identified"
+    similar_text     = ", ".join(similar) if similar else "N/A"
+
+    prompt = f"""You are a professional football scout writing a report for a scouting database.
+Write a concise, professional scout summary for {name} using ONLY the data below.
+
+Player Profile:
+  Name: {profile.get('Name')}, Age: {profile.get('Age')}, Club: {profile.get('Club')}
+  Position: {profile.get('Position')}, Overall: {profile.get('Overall')}, Potential: {profile.get('Potential')}
+  Market Value: {profile.get('Value')}
+
+League Percentile Rankings (vs all players in dataset):
+{pct_lines}
+
+Strengths:
+{strengths_text}
+
+Areas for Improvement:
+{improve_text}
+
+Similar Players (by stats): {similar_text}
+
+Write a professional scout summary of EXACTLY 3-4 sentences.
+Rules:
+- Use only the data provided — no hallucinations or real-world knowledge
+- Mention specific percentiles or stats to justify claims
+- Be analytical, not generic ("elite" is fine only if percentile supports it)
+- End with one forward-looking sentence about potential or role suitability
+- No bullet points, no headers — flowing paragraph only
+"""
+
+    try:
+        response = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.4,
+            max_tokens=250,
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"_Scout summary generation failed: {e}_"

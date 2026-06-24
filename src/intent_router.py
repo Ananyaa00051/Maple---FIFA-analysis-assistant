@@ -12,6 +12,7 @@ from src.analytics import (
     analyze_teams,
     get_value_players,
     get_potential_players,
+    get_player_report,
 )
 
 
@@ -98,6 +99,12 @@ def route_intent(intent_obj: dict, df: pd.DataFrame) -> tuple[pd.DataFrame, dict
             position=filters.get("position"),
             limit=int(intent_obj.get("limit", 10)),
         )
+        return result, {**meta_base, **meta}
+
+    # ── Player Report ──────────────────────────────────────────────────────
+    if intent == "player_report":
+        player_name = intent_obj.get("player_name", "")
+        result, meta = get_player_report(df, player_name)
         return result, {**meta_base, **meta}
 
     # ── Fallback ───────────────────────────────────────────────────────────

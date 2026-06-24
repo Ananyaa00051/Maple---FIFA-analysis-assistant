@@ -20,13 +20,15 @@ st.set_page_config(
 from src.data_loader import load_cached_dataset, get_dataset_info
 from src.query_parser import parse_query
 from src.intent_router import route_intent
-from src.llm_service import get_groq_client, generate_summary
+from src.llm_service import get_groq_client, generate_summary, generate_scout_report
 from src.visualization import (
     chart_top_players,
     chart_top_clubs,
     chart_age_vs_overall,
     chart_player_comparison,
     chart_value_players,
+    chart_player_radar_single,
+    chart_percentile_bars,
 )
 from src.utils import EXAMPLE_QUERIES, sanitize_query
 
@@ -349,34 +351,83 @@ with st.sidebar:
 
     # Re-bind df after load
     df = st.session_state.df
-
+    
     # -- Dataset status ------------------------------------------------------
-    st.markdown('<div class="sidebar-section"><h3>📊 Dataset Status</h3>', unsafe_allow_html=True)
+    st.markdown(
+        '<div class="sidebar-section"><h3>📊 Dataset Status</h3>',
+        unsafe_allow_html=True
+    )
 
     if df is not None:
         info = get_dataset_info(df)
+
         source_label = (
             "603-player sample"
             if st.session_state.dataset_source == "sample"
             else f"📎 {st.session_state.dataset_source}"
         )
-        st.markdown(f"""
-        <div class="stat-grid">
-            <div class="stat-card"><div class="val">{info['total_players']:,}</div><div class="lbl">Players</div></div>
-            <div class="stat-card"><div class="val">{info['total_clubs']:,}</div><div class="lbl">Clubs</div></div>
-            <div class="stat-card"><div class="val">{info['total_nationalities']}</div><div class="lbl">Nations</div></div>
-            <div class="stat-card"><div class="val">{info['avg_overall']}</div><div class="lbl">Avg OVR</div></div>
-        </div>
-        <div style="margin-top:8px;" class="status-ok">✓ Loaded — {source_label}</div>
-        """, unsafe_allow_html=True)
-    elif st.session_state.dataset_error:
-        st.markdown(f'<div class="status-err">✗ {st.session_state.dataset_error}</div>', unsafe_allow_html=True)
-        st.markdown('<div style="font-size:11px;color:#8899AA;margin-top:6px;">CSV must include:<br><code>player_name, age, overall, position, club...</code></div>', unsafe_allow_html=True)
-    elif choice_key == "upload":
-        st.markdown('<div style="color:#8899AA;font-size:13px;">Upload a CSV above to get started.</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div style="color:#8899AA;font-size:13px;">Loading...</div>', unsafe_allow_html=True)
 
+        st.markdown(
+            f'<div class="stat-grid">'
+            f'<div class="stat-card"><div class="val">{info["total_players"]:,}</div><div class="lbl">Players</div></div>'
+            f'<div class="stat-card"><div class="val">{info["total_clubs"]:,}</div><div class="lbl">Clubs</div></div>'
+            f'<div class="stat-card"><div class="val">{info["total_nationalities"]}</div><div class="lbl">Nations</div></div>'
+            f'<div class="stat-card"><div class="val">{info["avg_overall"]}</div><div class="lbl">Avg OVR</div></div>'
+            f'</div>'
+            f'<div style="margin-top:8px;" class="status-ok">\u2713 Loaded \u2014 {source_label}</div>',
+            unsafe_allow_html=True,
+        )
+
+
+    elif st.session_state.dataset_error:
+        st.markdown(
+            f'<div class="status-err">✗ {st.session_state.dataset_error}</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            '''
+            <div style="font-size:11px;color:#8899AA;margin-top:6px;">
+                CSV must include:<br>
+                <code>player_name, age, overall, position, club...</code>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
+
+    elif choice_key == "upload":
+        st.markdown(
+            '<div style="color:#8899AA;font-size:13px;">Upload a CSV above to get started.</div>',
+            unsafe_allow_html=True
+        )
+
+    else:
+        st.markdown(
+            '<div style="color:#8899AA;font-size:13px;">Loading...</div>',
+            unsafe_allow_html=True
+        )
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+    # -- Player Reports (quick-launch) ---------------------------------------
+    st.markdown(
+        '<div class="sidebar-section"><h3>📋 Player Reports</h3>',
+        unsafe_allow_html=True
+    )
+    if df is not None:
+        player_names = sorted(df["player_name"].dropna().astype(str).unique())
+        selected_player = st.selectbox(
+            "Select Player",
+            player_names,
+            key="player_report_select",
+            label_visibility="collapsed",
+        )
+        if st.button("📋 Generate Scouting Report", use_container_width=True, key="generate_report_btn"):
+            st.session_state["prefill_query"] = f"Generate scouting report for {selected_player}"
+            st.rerun()
+    else:
+        st.caption("Load a dataset to enable player reports.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # -- API status ----------------------------------------------------------
@@ -405,6 +456,7 @@ with st.sidebar:
         - **Team Analysis** — Club averages
         - **Value / Gems** — Undervalued players
         - **Potential** — Future stars
+        - **Player Report** — Full scouting report for any player
         """)
 
     # -- Clear chat ----------------------------------------------------------
@@ -482,12 +534,15 @@ if user_input := (st.chat_input("Ask Maple about players, clubs, stats...", key=
         st.markdown(query)
 
     with st.chat_message("assistant", avatar="⚽"):
-        if df is None:
-            st.markdown('<div class="error-box">⚠️ Dataset not loaded yet.</div>', unsafe_allow_html=True)
-            st.stop()
+        _dataset_missing = df is None
+        _api_missing = groq_client is None
 
-        if groq_client is None:
+        if _dataset_missing:
+            st.markdown('<div class="error-box">⚠️ Dataset not loaded yet.</div>', unsafe_allow_html=True)
+        elif _api_missing:
             st.markdown('<div class="error-box">⚠️ GROQ_API_KEY not configured. Please add it to your environment.</div>', unsafe_allow_html=True)
+
+        if _dataset_missing or _api_missing:
             st.stop()
 
         with st.spinner("Maple is thinking..."):
@@ -500,6 +555,91 @@ if user_input := (st.chat_input("Ask Maple about players, clubs, stats...", key=
                 "role": "assistant",
                 "data": {"error": err_msg},
             })
+
+
+        elif intent_obj.get("intent") == "player_report":
+            # ── Player Performance Report — rich multi-section layout ───────
+            with st.spinner("Generating scouting report..."):
+                result_df, meta = route_intent(intent_obj, df)
+
+            if meta.get("error"):
+                st.markdown(f'<div class="error-box">⚠️ {meta["error"]}</div>', unsafe_allow_html=True)
+                st.session_state.messages.append({"role": "assistant", "data": {"error": meta["error"]}})
+            else:
+                player_name = meta.get("player_name", "")
+                st.markdown(f'<div class="result-title">📋 Scouting Report — {player_name}</div>', unsafe_allow_html=True)
+
+                # -- Profile card ------------------------------------------
+                st.markdown("**Player Profile**")
+                st.dataframe(result_df, use_container_width=True, hide_index=True)
+
+                # -- Radar + Percentile bars side-by-side ------------------
+                col1, col2 = st.columns(2)
+                with col1:
+                    radar = chart_player_radar_single(meta.get("skill_snapshot", {}), player_name)
+                    if radar:
+                        st.plotly_chart(radar, use_container_width=True, config={"displayModeBar": False})
+                with col2:
+                    pct_chart = chart_percentile_bars(meta.get("percentiles", {}), player_name)
+                    if pct_chart:
+                        st.plotly_chart(pct_chart, use_container_width=True, config={"displayModeBar": False})
+
+                # -- Strengths & Areas for Improvement ---------------------
+                strengths   = meta.get("strengths", [])
+                improvements = meta.get("improvements", [])
+                col3, col4 = st.columns(2)
+                with col3:
+                    s_items = "".join(f"<li>✅ {s}</li>" for s in strengths) if strengths else "<li>No clear strengths identified</li>"
+                    st.markdown(f"""
+                    <div class="insights-box">
+                        <h4>💪 Strengths</h4>
+                        <ul style="margin:0;padding-left:18px;color:#B0C4D8;font-size:13px;line-height:1.8">{s_items}</ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+                with col4:
+                    i_items = "".join(f"<li>📈 {i}</li>" for i in improvements) if improvements else "<li>No major weaknesses detected</li>"
+                    st.markdown(f"""
+                    <div class="insights-box">
+                        <h4>🎯 Areas for Improvement</h4>
+                        <ul style="margin:0;padding-left:18px;color:#B0C4D8;font-size:13px;line-height:1.8">{i_items}</ul>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # -- Similar Players ---------------------------------------
+                similar = meta.get("similar_players", [])
+                if similar:
+                    pills = "".join(
+                        f'<span style="background:rgba(0,212,164,0.12);border:1px solid rgba(0,212,164,0.3);'
+                        f'border-radius:20px;padding:4px 12px;margin:3px;display:inline-block;'
+                        f'font-size:12px;color:#00D4A4;">#{i+1} {p}</span>'
+                        for i, p in enumerate(similar)
+                    )
+                    st.markdown(f"""
+                    <div class="insights-box" style="margin-top:12px">
+                        <h4>🤝 Similar Players (by stats)</h4>
+                        <div style="margin-top:6px">{pills}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                # -- AI Scout Summary -------------------------------------
+                with st.spinner("Writing AI scout summary..."):
+                    scout_summary = generate_scout_report(meta, groq_client)
+                if scout_summary:
+                    st.markdown(f"""
+                    <div class="insights-box" style="margin-top:12px;border-color:rgba(0,133,255,0.3);background:linear-gradient(135deg,rgba(0,133,255,0.08),rgba(0,212,164,0.06))">
+                        <h4>🧠 AI Scout Summary</h4>
+                        <p>{scout_summary}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "data": {
+                        "title": f"Scouting Report — {player_name}",
+                        "table": result_df,
+                        "summary": scout_summary if scout_summary else "",
+                    },
+                })
 
         else:
             with st.spinner("Running analytics..."):

@@ -357,3 +357,111 @@ def get_potential_players(
         "count": len(result),
     }
     return result, meta
+
+
+# ---------------------------------------------------------------------------
+# Feature 8: Player Performance Report
+# ---------------------------------------------------------------------------
+
+SKILL_COLS = ["pace", "shooting", "passing", "dribbling", "defending", "physicality"]
+
+_STRENGTH_LABELS = {
+    "pace":         "Elite pace and acceleration",
+    "shooting":     "Clinical finishing and shooting",
+    "passing":      "Exceptional vision and passing range",
+    "dribbling":    "Outstanding dribbling and ball control",
+    "defending":    "Strong defensive output and positioning",
+    "physicality":  "Dominant physical presence",
+}
+
+_IMPROVE_LABELS = {
+    "pace":         "Pace and acceleration",
+    "shooting":     "Finishing and shooting efficiency",
+    "passing":      "Distribution and passing range",
+    "dribbling":    "Ball control and dribbling",
+    "defending":    "Defensive contribution",
+    "physicality":  "Physical strength and aerial presence",
+}
+
+
+def get_player_report(
+    df: pd.DataFrame,
+    player_name: str,
+) -> tuple[pd.DataFrame, dict]:
+    """
+    Generate a comprehensive scouting report for a single player.
+    Returns a profile DataFrame and a rich meta dict containing:
+      - percentiles across 6 skill attributes vs. the full dataset
+      - strengths (top-25th-percentile attributes)
+      - areas for improvement (bottom-50th-percentile attributes)
+      - 5 most similar players found via KNN on skill stats
+    """
+    player = _find_player(df, player_name)
+    if player is None:
+        return pd.DataFrame(), {"error": f"Player '{player_name}' not found in dataset."}
+
+    # -- Percentiles (vs. whole dataset) ------------------------------------
+    available_skills = [c for c in SKILL_COLS if c in df.columns]
+    percentiles: dict[str, float] = {}
+    for col in available_skills:
+        pct = float((df[col] < player[col]).mean() * 100)
+        percentiles[col] = round(pct, 1)
+
+    # -- Strengths & areas for improvement ----------------------------------
+    strengths = [_STRENGTH_LABELS[c] for c in available_skills if percentiles[c] >= 75]
+    improvements = [_IMPROVE_LABELS[c] for c in available_skills if percentiles[c] < 50]
+
+    # -- KNN similar players (same position preferred) ----------------------
+    pos = str(player.get("position", ""))
+    scope = df[df["position"] == pos] if (df["position"] == pos).sum() >= 10 else df
+    scope = scope[scope["player_name"] != player["player_name"]].copy()
+
+    similar_players: list[str] = []
+    try:
+        from sklearn.neighbors import NearestNeighbors
+        from sklearn.preprocessing import StandardScaler
+
+        feat = scope[available_skills].fillna(0).values
+        if len(feat) >= 5:
+            scaler = StandardScaler()
+            X = scaler.fit_transform(feat)
+            query = scaler.transform([player[available_skills].fillna(0).values])
+            k = min(6, len(feat))
+            nn = NearestNeighbors(n_neighbors=k, metric="euclidean")
+            nn.fit(X)
+            _, idxs = nn.kneighbors(query)
+            similar_players = scope.iloc[idxs[0]]["player_name"].tolist()[:5]
+    except Exception:
+        # sklearn not available or edge case — skip silently
+        pass
+
+    # -- Profile card (single-row DataFrame) --------------------------------
+    profile = {
+        "Name":       player["player_name"],
+        "Age":        int(player["age"]),
+        "Nationality":player["nationality"],
+        "Club":       player["club"],
+        "Position":   player["position"],
+        "Overall":    int(player["overall"]),
+        "Potential":  int(player["potential"]),
+        "Value":      _format_value(player["value_eur"]) if player["value_eur"] > 0 else "N/A",
+        "Wage/wk":    _format_value(player["wage_eur"])  if player["wage_eur"]  > 0 else "N/A",
+    }
+    profile_df = pd.DataFrame([profile])
+
+    # -- Skill snapshot (for radar chart) -----------------------------------
+    skill_snapshot = {c.capitalize(): int(player.get(c, 0)) for c in available_skills}
+
+    meta = {
+        "title":           f"Scouting Report — {player['player_name']}",
+        "intent":          "player_report",
+        "player_name":     player["player_name"],
+        "profile":         profile,
+        "skill_snapshot":  skill_snapshot,
+        "percentiles":     percentiles,
+        "strengths":       strengths,
+        "improvements":    improvements,
+        "similar_players": similar_players,
+        "player":          player,
+    }
+    return profile_df, meta
