@@ -14,7 +14,7 @@
 
 *AI-Powered Football Scout Assistant · FIFA World Cup 2026 Edition*
 
-🎥 **Demo:** https://www.loom.com/share/c205efeffc9b491aafdbe60bd72e7953
+🎥 **Demo:** https://www.loom.com/share/45da6788665741e2a6a1594ca03d4e51
 
 </div>
 
