@@ -6,7 +6,13 @@ Main Streamlit application entry point.
 import streamlit as st
 import pandas as pd
 import os
+import io
 from pathlib import Path
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 
 # -- Page config (must be first Streamlit call) ------------------------------
 st.set_page_config(
@@ -31,6 +37,69 @@ from src.visualization import (
     chart_percentile_bars,
 )
 from src.utils import EXAMPLE_QUERIES, sanitize_query
+
+
+# -- PDF Export Helper --------------------------------------------------------
+def generate_pdf(title: str, table_df=None, summary: str = "", strengths=None, improvements=None, similar=None) -> bytes:
+    """Build a ReportLab PDF and return the raw bytes."""
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm,
+                            leftMargin=2*cm, rightMargin=2*cm)
+    styles = getSampleStyleSheet()
+    accent = colors.HexColor("#00D4A4")
+    dark   = colors.HexColor("#0A0E1A")
+
+    h1 = ParagraphStyle("h1", parent=styles["Heading1"], textColor=accent, fontSize=18, spaceAfter=6)
+    h2 = ParagraphStyle("h2", parent=styles["Heading2"], textColor=dark, fontSize=12, spaceAfter=4)
+    body = ParagraphStyle("body", parent=styles["Normal"], fontSize=9, leading=14, spaceAfter=4)
+
+    story = []
+    story.append(Paragraph("⚽ Maple — AI Football Scout Report", h1))
+    story.append(Paragraph(title, h2))
+    story.append(HRFlowable(width="100%", thickness=1, color=accent))
+    story.append(Spacer(1, 0.3*cm))
+
+    if table_df is not None and not table_df.empty:
+        story.append(Paragraph("Player Data", h2))
+        col_names = list(table_df.columns)
+        data = [col_names] + table_df.astype(str).values.tolist()
+        tbl = Table(data, repeatRows=1, hAlign="LEFT")
+        tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,0), accent),
+            ("TEXTCOLOR",  (0,0), (-1,0), colors.white),
+            ("FONTSIZE",   (0,0), (-1,-1), 8),
+            ("ROWBACKGROUNDS", (0,1), (-1,-1), [colors.HexColor("#F5F8FA"), colors.white]),
+            ("GRID",       (0,0), (-1,-1), 0.4, colors.lightgrey),
+            ("TOPPADDING", (0,0), (-1,-1), 3),
+            ("BOTTOMPADDING", (0,0), (-1,-1), 3),
+        ]))
+        story.append(tbl)
+        story.append(Spacer(1, 0.4*cm))
+
+    if strengths:
+        story.append(Paragraph("💪 Strengths", h2))
+        for s in strengths:
+            story.append(Paragraph(f"✔ {s}", body))
+        story.append(Spacer(1, 0.2*cm))
+
+    if improvements:
+        story.append(Paragraph("🎯 Areas for Improvement", h2))
+        for i in improvements:
+            story.append(Paragraph(f"• {i}", body))
+        story.append(Spacer(1, 0.2*cm))
+
+    if similar:
+        story.append(Paragraph("🤝 Similar Players", h2))
+        story.append(Paragraph(", ".join(similar), body))
+        story.append(Spacer(1, 0.2*cm))
+
+    if summary:
+        story.append(Paragraph("🧠 AI Scout Summary", h2))
+        story.append(Paragraph(summary.replace("\n", "<br/>"), body))
+
+    doc.build(story)
+    return buf.getvalue()
+
 
 
 # -- Custom CSS ---------------------------------------------------------------
@@ -632,6 +701,23 @@ if user_input := (st.chat_input("Ask Maple about players, clubs, stats...", key=
                     </div>
                     """, unsafe_allow_html=True)
 
+                # -- PDF Export button --------------------------------------
+                pdf_bytes = generate_pdf(
+                    title=f"Scouting Report — {player_name}",
+                    table_df=result_df,
+                    summary=scout_summary or "",
+                    strengths=strengths,
+                    improvements=improvements,
+                    similar=similar if similar else [],
+                )
+                st.download_button(
+                    label="📄 Download PDF Report",
+                    data=pdf_bytes,
+                    file_name=f"{player_name.replace(' ', '_')}_scout_report.pdf",
+                    mime="application/pdf",
+                    key=f"pdf_{player_name}_{len(st.session_state.messages)}",
+                )
+
                 st.session_state.messages.append({
                     "role": "assistant",
                     "data": {
@@ -698,6 +784,21 @@ if user_input := (st.chat_input("Ask Maple about players, clubs, stats...", key=
                     </div>
                     """, unsafe_allow_html=True)
                     response_data["summary"] = summary
+
+            # -- PDF Export button -----------------------------------------
+            if not meta.get("error") and not result_df.empty:
+                pdf_bytes = generate_pdf(
+                    title=response_data.get("title", "Analytics Report"),
+                    table_df=result_df,
+                    summary=response_data.get("summary", ""),
+                )
+                st.download_button(
+                    label="📄 Download PDF",
+                    data=pdf_bytes,
+                    file_name="maple_report.pdf",
+                    mime="application/pdf",
+                    key=f"pdf_analytics_{len(st.session_state.messages)}",
+                )
 
             st.session_state.messages.append({
                 "role": "assistant",
