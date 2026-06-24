@@ -306,10 +306,10 @@ All analytics and calculations run **locally on the dataset using Pandas** — t
 
 <div align="center">
 
-### Built with ⚽ + 📊 + 🤖
+### Built for IQM ASSESMENT
 
 **MAPLE** — Football Intelligence Powered by Data & AI
 
-*FIFA World Cup 2026 · Canada · Named after the official mascot*
+*FIFA World Cup 2026 · Named after the official FIFA mascot of Canada  *
 
 </div>
